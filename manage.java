@@ -1,5 +1,8 @@
 package Hotel;
 
+import java.sql.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -12,12 +15,11 @@ public class manage {
 	private static  Floor[] flloor = new Floor[5];
 	private static  User user = new User();
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws ParseException {
 		init();
 		int i = 1;
 		while(i!= 1000){
 			
-			System.out.println(i);
 //			Scann(user);
 			Rand(user);
 			match_rooms(user);
@@ -28,8 +30,85 @@ public class manage {
 			System.out.println();
 		}
 		
+		
+		int a = 0;
+		float total = 0;
+		for(int i2 = 0; i2 < flloor.length;i2++){
+			for(int j = 0;j < flloor[i2].room.length;j++){
+				a += flloor[i2].room[j].list.size();
+				for(int k = 0; k < flloor[i2].room[j].list.size();k++){
+					Inform mm = flloor[i2].room[j].list.get(k);
+					total += count_total(mm);
+				}
+			}
+		}
+		System.out.println(a);
+		System.out.println(" total: "+total);
+		
+		for(int month = 8;month < 9;month++){
+			for(int day = 1;day < 31;day++){
+				String s = "2018-";
+				if(month < 10){
+					s = s+"0"+month+"-";
+				}else{
+					s = s+month+"-";
+				}
+				if(day < 10){
+					s = s+"0"+day;
+				}else{
+					s = s+day;
+				}
+				System.out.println(s);
+				statistics(s);
+				System.out.println();
+				
+			}
+		}
 	
 	}
+	
+	private static float count_total(Inform inform) throws ParseException{
+		 SimpleDateFormat sdf = new SimpleDateFormat( "yyyy-MM-dd" );
+		String begin = inform.begin_date;
+		String end = inform.end_date;
+		long m = sdf.parse(end).getTime() - sdf.parse(begin).getTime();
+		long days =  m / (1000 * 60 * 60 * 24);
+		return days*inform.money;
+	}
+	
+	private static void statistics(String s) {
+		// TODO Auto-generated method stub
+		for(int i = 0;i < flloor.length;i++){
+			Floor floor = flloor[i];
+			for(int j = 0;j < floor.room.length;j++){
+				Room room = floor.room[j];
+				int a = check(room,s);
+				if(a == 1){
+					System.out.println(""+(i+1)+room.num+":空房");
+				}else if(a == 2){
+					System.out.println(""+(i+1)+room.num+":住人");
+				}else if(a == 3){
+					System.out.println(""+(i+1)+room.num+":脏房");
+				}
+			}
+		}
+	}
+
+	private static int check(Room room, String s) {
+		// TODO Auto-generated method stub
+		for(int i = 0;i < room.list.size();i++){
+			Inform inform = room.list.get(i);
+			if(inform.end_date.equals(s)&&(inform.stay_in == 0||inform.stay_in == 3)){
+				return 3;
+			}else if((inform.begin_date.compareTo(s)<=0&&inform.end_date.compareTo(s)>=0)||
+					(inform.end_date.equals(s)&&(inform.stay_in == 1||inform.stay_in == 2))){
+				return 2;
+			}
+		}
+		return 1;
+	}
+
+
 	
 	private static void Rand(User u) {
 		// TODO Auto-generated method stub
@@ -73,7 +152,10 @@ public class manage {
 		
 		
 		String out = "2018-";
-		int a_1 = random.nextInt(2)+a;
+		int a_1 = 0;
+		while(a_1 < a){
+			a_1 = random.nextInt(2)+8;
+		}
 		if(a_1 < 10){
 			out  = out+"0"+a_1+"-";
 		}else{
@@ -94,7 +176,7 @@ public class manage {
 			out = out + b_l;
 		}
 		u.out = out;
-		System.out.println(u.in + " " + u.out);
+		//System.out.println(u.in + " " + u.out);
 	}
 
 	private static void init() {
@@ -238,7 +320,7 @@ public class manage {
 		
 		
 		if(flag == 1){
-			System.out.println("index:"+index);
+			//System.out.println("index:"+index);
 			Inform inform_2 = new Inform();
 			inform_2.begin_date = u.in;
 			inform_2.end_date = u.out;
@@ -254,7 +336,7 @@ public class manage {
 			flloor[f].room[index].list.add(inform_2);
 		}else{
 			if(u.together == 1&&u.number == 1){
-				System.out.println("together");
+				//System.out.println("together");
 				int index_2;flag = 2;
 				for(index_2 = 0; index_2 < 20;index_2++){
 					Room r = flloor[f].room[index_2];
@@ -264,7 +346,7 @@ public class manage {
 							Inform inform = r.list.get(j);
 							if(u.in.compareTo(inform.begin_date)>=0&&u.out.compareTo(inform.end_date)<=0&&
 									inform.sex == u.sex && inform.status == 1 &&inform.stay_in < r.up){
-								System.out.println("ok");
+								//System.out.println("ok");
 								flag = 0;
 								add_in(u,f,index_2,inform,j);
 								break;
